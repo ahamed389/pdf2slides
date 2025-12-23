@@ -1,74 +1,91 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iTrustPDF - PDF/PPTX Converter</title>
     <style>
-        /* Add your CSS styles here */
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .converter { border: 2px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 10px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; display: none; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>iTrustPDF Converter</h1>
-        <div class="converter-section">
-            <div class="converter-box">
-                <h2>PDF to PowerPoint</h2>
-                <input type="file" id="pdfFile" accept=".pdf">
-                <button onclick="convertFile('pdf2pptx')">Convert to PPTX</button>
-            </div>
-            <div class="converter-box">
-                <h2>PowerPoint to PDF</h2>
-                <input type="file" id="pptxFile" accept=".ppt,.pptx">
-                <button onclick="convertFile('pptx2pdf')">Convert to PDF</button>
-            </div>
-        </div>
+    <h1>iTrustPDF Converter</h1>
+    
+    <div class="converter">
+        <h2>PDF to PowerPoint</h2>
+        <input type="file" id="pdfFile" accept=".pdf">
+        <button onclick="convert('pdf-to-pptx')">Convert to PPTX</button>
+        <div id="pdfStatus" class="status"></div>
     </div>
+    
+    <div class="converter">
+        <h2>PowerPoint to PDF</h2>
+        <input type="file" id="pptxFile" accept=".ppt,.pptx">
+        <button onclick="convert('pptx-to-pdf')">Convert to PDF</button>
+        <div id="pptxStatus" class="status"></div>
+    </div>
+
     <script>
-        async function convertFile(type) {
-            const fileInput = type === 'pdf2pptx' ? 
-                document.getElementById('pdfFile') : 
-                document.getElementById('pptxFile');
-            
-            if (!fileInput.files.length) {
-                alert('Please select a file first');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('type', type);
-            
-            try {
-                const response = await fetch('/convert', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Conversion failed');
-                }
-                
-                // Download the file
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = type === 'pdf2pptx' ? 
-                    'converted_presentation.pptx' : 
-                    'converted_document.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                
-                alert('Conversion successful!');
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
+    async function convert(type) {
+        const fileInput = type === 'pdf-to-pptx' ? 
+            document.getElementById('pdfFile') : 
+            document.getElementById('pptxFile');
+        const status = type === 'pdf-to-pptx' ? 
+            document.getElementById('pdfStatus') : 
+            document.getElementById('pptxStatus');
+        
+        if (!fileInput.files.length) {
+            status.textContent = 'Please select a file first';
+            status.className = 'status error';
+            status.style.display = 'block';
+            return;
         }
+        
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        
+        const endpoint = type === 'pdf-to-pptx' ? 
+            '/convert-pdf-to-pptx' : 
+            '/convert-pptx-to-pdf';
+        
+        try {
+            status.textContent = 'Converting...';
+            status.className = 'status';
+            status.style.display = 'block';
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Conversion failed');
+            }
+            
+            // Download file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = type === 'pdf-to-pptx' ? 'converted.pptx' : 'converted.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            status.textContent = 'Conversion successful!';
+            status.className = 'status success';
+            
+        } catch (error) {
+            status.textContent = 'Error: ' + error.message;
+            status.className = 'status error';
+        }
+    }
     </script>
 </body>
 </html>
