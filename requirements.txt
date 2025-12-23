@@ -1,12 +1,7 @@
-numpy
-paddleocr
-paddlepaddle
-pillow
-PyMuPDF
-python-pptx
-scikit-learn
-flask>=2.3.3
-pdf2pptx>=1.0.5
-comtypes>=1.2.1
-gunicorn>=20.1.0
-werkzeug>=2.3.7
+flask==2.3.3
+reportlab==4.0.4
+pillow==10.0.0
+python-pptx==0.6.21
+PyMuPDF==1.23.8  # Use this specific, more stable version
+pdf2pptx==0.4.2
+gunicorn==20.1.0
