@@ -2,3 +2,12 @@ build/
 dist/
 *.egg-info/
 *.egg
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.tmp
+*.temp
