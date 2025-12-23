@@ -1,13 +1,23 @@
 services:
   - type: web
     name: itrustpdf-converter
+    env: python
     plan: free
-    runtime: python
-    repo: https://github.com/ahamed389/pdf2slides.git
-    branch: main
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      apt-get update && apt-get install -y \
+        libjbig2dec0 \
+        libgumbo1 \
+        libmujs1 \
+        libfreetype6 \
+        libjpeg-dev \
+        libopenjp2-7 \
+        libharfbuzz-dev \
+        libpng-dev
+      pip install --upgrade pip
+      pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
     healthCheckPath: /health
+    autoDeploy: true
