@@ -1,0 +1,74 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iTrustPDF - PDF/PPTX Converter</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>iTrustPDF Converter</h1>
+        <div class="converter-section">
+            <div class="converter-box">
+                <h2>PDF to PowerPoint</h2>
+                <input type="file" id="pdfFile" accept=".pdf">
+                <button onclick="convertFile('pdf2pptx')">Convert to PPTX</button>
+            </div>
+            <div class="converter-box">
+                <h2>PowerPoint to PDF</h2>
+                <input type="file" id="pptxFile" accept=".ppt,.pptx">
+                <button onclick="convertFile('pptx2pdf')">Convert to PDF</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function convertFile(type) {
+            const fileInput = type === 'pdf2pptx' ? 
+                document.getElementById('pdfFile') : 
+                document.getElementById('pptxFile');
+            
+            if (!fileInput.files.length) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('type', type);
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Conversion failed');
+                }
+                
+                // Download the file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = type === 'pdf2pptx' ? 
+                    'converted_presentation.pptx' : 
+                    'converted_document.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                alert('Conversion successful!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
